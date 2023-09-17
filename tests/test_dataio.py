@@ -1,0 +1,1 @@
+from dbbase import MusicDBDataIOfrom dbbase import MusicDBRootDataIOfrom dbmaster import MasterDBsdef test_dataio():    dbs = MasterDBs().getDBs()    rdio = MusicDBRootDataIO(dbs[0])    dataio = MusicDBDataIO(rdio)

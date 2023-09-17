@@ -1,0 +1,1 @@
+from dbbase import SummaryNameStandard, MatchNameStandarddef test_standardname():    sns = SummaryNameStandard()    assert len(sns.funcs) > 0, "SummaryNameStandard funcs is empty!"        mns = MatchNameStandard()    assert len(mns.funcs) > 0, "MatchNameStandard funcs is empty!"

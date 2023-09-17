@@ -1,0 +1,1 @@
+from dbbase import MusicDBParamsBasedef test_params():    mdbparams = MusicDBParamsBase()    assert isinstance(mdbparams, MusicDBParamsBase), "mdbparams is not a MusicDBParamsBase"
