@@ -21,7 +21,7 @@ class MusicDBRootPath:
         if local is True:
             self.rawPath = mp.getMatchPath()
         elif mod is True:
-            self.rawPath = mp.getModPath()
+            self.rawPath = mp.getModValPath()
         else:
             self.rawPath = mp.getRawPath()
         self.modPath = mp.getModValPath()
@@ -50,8 +50,9 @@ class MusicDBRootDataIO:
         #######################################################################
         # Root Directories
         #######################################################################
-        rawDBName = f"artists-{dbname}"
-        self.addDir("Raw", MusicDBDir(path=root.rawPath.join(rawDBName)))
+        self.rawDBName = f"artists-{dbname}"
+        self.addDir("Raw", MusicDBDir(path=root.rawPath.join(self.rawDBName)))
+        self.addDir("RawSearch", MusicDBDir(path=self.getDBDir("Raw"), child="search"))
         self.addDir("RawModVal", MusicDBDir(path=self.getDBDir("Raw"), arg=True))
         
         modDBName = f"artists-{dbname}-db"
@@ -68,6 +69,8 @@ class MusicDBRootDataIO:
         #######################################################################
         # Root Data
         #######################################################################
+        # self.addData("RawArtist", MusicDBData(path=self.getDBDir("RawModVal"), arg=True), addname=True)
+        
         self.addData("ModVal", MusicDBData(path=self.getDBDir("ModVal"), arg=True, suffix="DB"), addname=True)
         
         metaTypes = mm.getMetaTypes().keys()
@@ -96,9 +99,12 @@ class MusicDBRootDataIO:
     ###########################################################################
     # Add/Get MusicDB Data To/From Data List
     ###########################################################################
-    def addData(self, key, mdbDataIO, addname=False):
+    def isData(self, key: str) -> 'bool':
+        return key in self.data.keys()
+    
+    def addData(self, key: str, mdbDataIO: MusicDBData, addname=False) -> 'None':
         assert isinstance(mdbDataIO, MusicDBData), f"mdbDataIO [{mdbDataIO}] is not a MusicDBData"
-        assert key not in self.data.keys(), f"key [{key}] data is already set!"
+        assert self.isData(key) is False, f"key [{key}] data is already set!"
         if any([key.startswith(value) for value in ["ModVal", "Summary"]]):
             exec("self.get{0}Data  = mdbDataIO.get".format(key))
             exec("self.save{0}Data = mdbDataIO.save".format(key))
@@ -152,7 +158,9 @@ class MusicDBRootDataIO:
         return retval
         
     def saveData(self, key: str, *args, **kwargs):
-        verbose = kwargs.get('verbose', self.verbose)
+        debug = kwargs.get('debug', False)
+        verbose = True if debug is True else False
+        
         data = kwargs.get('data')
         assert data is not None, "data is None!"
         if verbose:
@@ -186,7 +194,8 @@ class MusicDBRootDataIO:
         return retval
         
     def getDir(self, key: str, *args, **kwargs) -> 'DirInfo':
-        verbose = kwargs.get('verbose', self.verbose)
+        debug = kwargs.get('debug', False)
+        verbose = True if debug is True else False
         if verbose:
             print(f"rdio.getDir(key={key}, args={args}, **kwargs)")
             
@@ -206,16 +215,23 @@ class MusicDBRootDataIO:
     def createDirs(self) -> 'None':
         if self.mkDirs is False:
             return
-        for mdbdir in self.dirs.values():
-            mdbdir.mkDir()
-        for modVal in getModVals():
-            mdbdir = self.getDir("RawModVal", modVal)
-            mdbdir.mkDir()
-                    
+        baseDirs = {key: dbdir for key, dbdir in self.dirs.items() if dbdir.getNumArgs() == 0}
+        for key, dbdir in baseDirs.items():
+            dbdir.mkDir()
+        
+        modValDirs = {key: dbdir for key, dbdir in self.dirs.items() if dbdir.getNumArgs() == 1}
+        for key, dbdir in modValDirs.items():
+            for modVal in getModVals():
+                dbdir.mkDir(modVal)
+
+        otherDirs = {key: dbdir for key, dbdir in self.dirs.items() if dbdir.getNumArgs() > 1}
+        assert len(otherDirs) == 0, f"Found {otherDirs} that require more than one arg!"
+        
     ###########################################################################
     # Info
     ###########################################################################
     def clsdir(self) -> 'None':
+        return
         print("  Callable:")
         for func in dir(self):
             if callable(eval(f"self.{func}")) and not func.startswith("__"):

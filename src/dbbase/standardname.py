@@ -1,10 +1,27 @@
 """ Standard Artist Renaming Schemes """
 
-__all__ = ["SummaryNameStandard", "MatchNameStandard"]
+__all__ = ["NameStandard", "SummaryNameStandard", "MatchNameStandard"]
 
 import re
 from unidecode import unidecode
 from pandas import Series
+from utils import NormalizeString
+
+
+class NameStandard:
+    def __init__(self):
+        self.normstr = NormalizeString
+        
+    def convert(self, x):
+        if not isinstance(x, str):
+            return ""
+        x = x.replace("/", "-")
+        x = x.replace("¡", "")
+        while x.startswith(".") and len(x) > 1:
+            x = x[1:]
+        x = x.strip()
+        x = self.normstr.convert(x)
+        return x
 
 
 class NameStandardBase:

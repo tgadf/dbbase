@@ -43,20 +43,20 @@ class MusicDBIDModVal:
         retval = f"0{modVal}" if modVal < 10 else f"{modVal}"
         return retval
     
-    def getDBID(self, dbid):
+    def getDBID(self, dbid) -> 'str':
         if dbid is None:
             return None
         dbid = str(dbid) if isinstance(dbid, int) else dbid
         assert isinstance(dbid, str), f"dbid [{dbid}] is not a string"
         return f"0000{dbid}"
         
-    def getModVal(self, dbid):
+    def getModVal(self, dbid: str) -> 'int':
         hashval = self.getDBIDHashVal(dbid)
         dbidstr = self.getDBID(hashval)
         modVal = int(dbidstr) % self.maxModVal if isinstance(dbidstr, str) else None
         return modVal
         
-    def getGlobVal(self, dbid):
+    def getGlobVal(self, dbid: str) -> 'int':
         hashval = self.getDBIDHashVal(dbid)
         dbidstr = self.getDBID(hashval)
         modVal = int(dbidstr[:-2]) % self.maxModVal if isinstance(dbidstr, str) else None

@@ -8,6 +8,9 @@ from .dbdir import MusicDBDir
 
 
 class MusicDBData:
+    def __repr__(self):
+        return f"MusicDBData(path={self.path}, arg={self.arg}, fname={self.fname}, prefix={self.prefix}, suffix={self.suffix})"
+    
     def __init__(self, path: MusicDBDir, arg=False, fname=None, prefix=None, suffix=None, ext=".p"):
         assert isinstance(path, MusicDBDir), f"path [{path}] is not a MusicDBDir"
         self.path = path
